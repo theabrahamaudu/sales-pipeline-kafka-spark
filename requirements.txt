@@ -1,2 +1,5 @@
 kafka-python
 pandas
+cassandra-driver
+pymysql
+ipykernel
