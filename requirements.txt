@@ -3,3 +3,5 @@ pandas
 cassandra-driver
 pymysql
 ipykernel
+pyspark
+python-dotenv

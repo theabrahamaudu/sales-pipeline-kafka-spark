@@ -1,0 +1,16 @@
+kafka:
+  topic: orderstopicdemo
+  bootsrap_server: localhost:9092
+
+mysql:
+  host: localhost
+  port: 3306
+  driver: com.mysql.cj.jdbc.Driver
+  database: sales_db
+  table: total_sales_by_source_state
+
+cassandra:
+  host: localhost
+  port: 9042
+  keyspace: sales_ks
+  table: orders_tbl
