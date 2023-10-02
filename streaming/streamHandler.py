@@ -7,8 +7,6 @@ import pandas as pd
 from dotenv import load_dotenv
 import os
 
-with open('config/config.yaml', 'r') as f:
-    config = yaml.safe_load(f.read())
 
 class streamHandler:
     def __init__(self, config_path: str, customer_data_path: str):
@@ -18,8 +16,17 @@ class streamHandler:
             config = yaml.safe_load(f.read())
         self.config = config
 
-        # Load customer data
-        self.customer_data = pd.read_csv(customer_data_path)
+        # Define schema for orders dataframe
+        self.orders_schema = StructType() \
+            .add("order_id", StringType()) \
+            .add("created_at", StringType()) \
+            .add("discount", StringType()) \
+            .add("product_id", StringType()) \
+            .add("quantity", StringType()) \
+            .add("subtotal", StringType()) \
+            .add("tax", StringType()) \
+            .add("total", StringType()) \
+            .add("customer_id", StringType())
 
         # Initialize kafka variables
         self.topic = self.config['kafka']['topic']
@@ -42,15 +49,110 @@ class streamHandler:
         self.cassandra_keyspace = self.config['cassandra']['keyspace']
         self.cassandra_table = self.config['cassandra']['table']
 
-
-    def startSparkSession(self):
+        # Start Spark session
         spark = SparkSession \
             .builder \
             .appName("Pyspark Structured Streaming w/ Kafka-Cassandra-MySQL") \
             .master("local[*]") \
-            .config("spark.some.config.option", "some-value") \
+            .config("spark.jars", "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/jsr166e-1.1.0.jar,\
+                    file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-cassandra-connector-2.4.0-s_2.11.jar") \
+            .config("spark.executor.extraClassPath", "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/jsr166e-1.1.0.jar,\
+                    file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-cassandra-connector-2.4.0-s_2.11.jar") \
+            .config("spark.executor.extraLibrary", "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/jsr166e-1.1.0.jar,\
+                    file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-cassandra-connector-2.4.0-s_2.11.jar") \
+            .config("spark.driver.extraClassPath", "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/jsr166e-1.1.0.jar,\
+                    file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-cassandra-connector-2.4.0-s_2.11.jar") \
+            .config("spark.cassandra.connection.host", self.cassandra_host) \
+            .config("spark.cassandra.connection.port", self.cassandra_port) \
             .getOrCreate()
-        return spark
+        
+        spark.sparkContext.setLogLevel('ERROR')
+        self.spark = spark
+
+        # Load customer data
+        self.customer_data = self.spark.read.csv(customer_data_path,
+                                                 header=True,
+                                                 inferSchema=True)
+
+
+    def readFromKafka(self, offset_start='latest'):
+        # Read from kafka
+        orders_df = self.spark.readStream\
+            .format("kafka")\
+            .option("kafka.bootstrap.servers", self.server)\
+            .option("subscribe", self.topic)\
+            .option("startingOffsets", offset_start)\
+            .load()
+        
+        # Print schema of dataframe
+        print("Orders dataframe schema: ")
+        orders_df.printSchema()
+
+        return orders_df
+    
+
+    def transformOrdersData(self, orders_df):
+        # Transform orders dataframe to include timestamp
+        orders_df1 = orders_df\
+            .selectExpr("CAST(value AS STRING)", "timestamp")
+        
+        orders_df2 = orders_df1\
+            .select(from_json(col("value"), self.orders_schema).alias("orders"), "timestamp")\
+        
+        orders_df3 = orders_df2\
+            .select("orders.*", "timestamp")
+        
+        return orders_df3
+    
+
+    def aggregateData(self, orders_df3):
+        # print schema of customer dataframe
+        print("Customer dataframe schema: ")
+        self.customer_data.printSchema()
+
+        # Join customer dataframe to orders dataframe by customer_id
+        orders_df4 = orders_df3\
+            .join(self.customer_data, orders_df3.customer_id == self.customer_data.customer_id, 'inner')
+        
+        # find total_sum_amount by grouping source, state
+        orders_df5 = orders_df4.groupBy("source", "state")\
+            .agg({"total": "sum"}).select("source", "state", col("sum(total)").alias("total_sum_amount"))
+        
+        # print aggregated dataframe schema
+        print("Aggregated dataframe schema: ")
+        orders_df5.printSchema()
+
+        # write data to console for debugging
+        orders_df5.writestream\
+            .trigger(processingTime='15 seconds')\
+            .outputMode("update")\
+            .option("truncate", "false")\
+            .format("console")\
+            .start()
+
+        return orders_df5
+    
+
+    def writeAggToMySQL(self, orders_df5):
+        orders_df5.writeStream\
+            .trigger(processingTime='15 seconds')\
+            .outputMode("update")\
+            .foreachBatch(self.saveToMySQL)\
+            .start()
+
+
+    def saveToMySQL(self, current_df, epoch_id):
+        # Print current epoch_id
+        print(f"Current epoch_id:\n {epoch_id}")
+
+
+    def writeOrdersToCassandra(self, orders_df3):
+        # Write dataframe to cassandra
+        orders_df3.writeStream\
+            .trigger(processingTime='15 seconds')\
+            .outputMode("update")\
+            .foreachBatch(self.saveToCassandra)\
+            .start()
 
 
     def saveToCassandra(self, current_df, epoch_id):
@@ -63,5 +165,6 @@ class streamHandler:
             .options(table=self.cassandra_table, keyspace=self.cassandra_keyspace)\
             .mode("append")\
             .save()
+
 
 
