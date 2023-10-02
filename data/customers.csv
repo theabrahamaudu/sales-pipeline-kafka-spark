@@ -1,0 +1,32 @@
+customer_id,name,address,birth_date,city,created_at,email,latitude,longitude,password,source,state,zip
+1,John Doe,123 Main St,1990-01-15,New York,2023-09-30,johndoe@email.com,40.7128,-74.0060,password123,Organic,NY,10001
+2,Jane Smith,456 Elm St,1985-05-20,Los Angeles,2023-09-30,janesmith@email.com,34.0522,-118.2437,securepass123,Affiliate,CA,90001
+3,Robert Johnson,789 Oak St,1982-11-08,Chicago,2023-09-30,robertjohnson@email.com,41.8781,-87.6298,userpass456,Google,IL,60601
+4,Susan Lee,101 Pine St,1988-03-25,Houston,2023-09-30,susanlee@email.com,29.7604,-95.3698,pass12345,Twitter,TX,77001
+5,Michael Wilson,246 Cedar St,1977-09-12,Phoenix,2023-09-30,michaelwilson@email.com,33.4484,-112.0740,pwd45678,Facebook,AZ,85001
+6,Linda Brown,789 Maple St,1992-04-30,Philadelphia,2023-09-30,lindabrown@email.com,39.9526,-75.1652,secret7890,Organic,PA,19101
+7,William Davis,369 Birch St,1981-12-05,Dallas,2023-09-30,williamdavis@email.com,32.7767,-96.7970,mysecurepwd,Affiliate,TX,75201
+8,Emily Wilson,555 Redwood St,1986-07-18,San Antonio,2023-09-30,emilywilson@email.com,29.4241,-98.4936,emailpass321,Google,TX,78201
+9,David Taylor,888 Cedar St,1995-02-22,Phoenix,2023-09-30,davidtaylor@email.com,33.4484,-112.0740,testpassword,Twitter,AZ,85001
+10,Olivia Harris,111 Oak St,1979-06-10,Los Angeles,2023-09-30,oliviaharris@email.com,34.0522,-118.2437,mysecurepass,Facebook,CA,90001
+11,James Jackson,222 Elm St,1990-09-02,Chicago,2023-09-30,jamesjackson@email.com,41.8781,-87.6298,password321,Organic,IL,60601
+12,Charlotte White,333 Pine St,1987-03-15,New York,2023-09-30,charlottewhite@email.com,40.7128,-74.0060,secure123,Affiliate,NY,10001
+13,Samuel Martinez,444 Maple St,1984-08-28,Philadelphia,2023-09-30,samuelmartinez@email.com,39.9526,-75.1652,userpwd789,Google,PA,19101
+14,Elizabeth Clark,555 Birch St,1991-05-06,Houston,2023-09-30,elizabethclark@email.com,29.7604,-95.3698,mypassword123,Twitter,TX,77001
+15,Charles Allen,666 Redwood St,1978-01-19,San Antonio,2023-09-30,charlesallen@email.com,29.4241,-98.4936,emailpass456,Facebook,TX,78201
+16,Sophia Baker,777 Cedar St,1993-11-14,Phoenix,2023-09-30,sophiabaker@email.com,33.4484,-112.0740,pass1234,Organic,AZ,85001
+17,Matthew Turner,888 Oak St,1980-06-26,Los Angeles,2023-09-30,matthewturner@email.com,34.0522,-118.2437,secret456,Affiliate,CA,90001
+18,Ava Anderson,999 Elm St,1989-02-11,Chicago,2023-09-30,avaanderson@email.com,41.8781,-87.6298,testpass789,Google,IL,60601
+19,Ethan Scott,101 Pine St,1994-07-04,Houston,2023-09-30,ethanscott@email.com,29.7604,-95.3698,securepwd123,Twitter,TX,77001
+20,Isabella Parker,202 Cedar St,1976-12-09,Phoenix,2023-09-30,isabellaparker@email.com,33.4484,-112.0740,email12345,Facebook,AZ,85001
+21,Mia Rodriguez,303 Maple St,1992-10-30,Philadelphia,2023-09-30,miarodriguez@email.com,39.9526,-75.1652,mypassword789,Organic,PA,19101
+22,William Davis,404 Birch St,1982-04-03,Dallas,2023-09-30,williamdavis2@email.com,32.7767,-96.7970,user45678,Affiliate,TX,75201
+23,Emily Wilson,505 Redwood St,1988-08-17,San Antonio,2023-09-30,emilywilson2@email.com,29.4241,-98.4936,securepass321,Google,TX,78201
+24,David Taylor,606 Cedar St,1975-03-01,Phoenix,2023-09-30,davidtaylor2@email.com,33.4484,-112.0740,secret7890,Twitter,AZ,85001
+25,Olivia Harris,707 Oak St,1990-11-25,Los Angeles,2023-09-30,oliviaharris2@email.com,34.0522,-118.2437,pass12345,Facebook,CA,90001
+26,James Jackson,808 Elm St,1983-06-18,Chicago,2023-09-30,jamesjackson2@email.com,41.8781,-87.6298,pwd45678,Organic,IL,60601
+27,Charlotte White,909 Pine St,1979-01-03,New York,2023-09-30,charlottewhite2@email.com,40.7128,-74.0060,mysecurepwd,Affiliate,NY,10001
+28,Samuel Martinez,101 Maple St,1995-09-20,Philadelphia,2023-09-30,samuelmartinez2@email.com,39.9526,-75.1652,password321,Google,PA,19101
+29,Elizabeth Clark,202 Birch St,1981-02-13,Houston,2023-09-30,elizabethclark2@email.com,29.7604,-95.3698,secure123,Twitter,TX,77001
+30,Charles Allen,303 Redwood St,1993-07-08,San Antonio,2023-09-30,charlesallen2@email.com,29.4241,-98.4936,secret7890,Facebook,TX,78201
+31,Sophia Baker,404 Cedar St,1986-04-27,Phoenix,2023-09-30,sophiabaker2@email.com,33.4484,-112.0740,emailpass456,Organic,AZ,85001

@@ -1,0 +1,68 @@
+product_id,category,created_at,ean,price,rating,title,vendor
+3,Electronics,2023-09-30,1234567890123,499.99,4.5,Smartphone XYZ,ABC Electronics
+6,Clothing,2023-09-30,9876543210987,29.99,3.2,Blue Jeans,Fashion Co.
+7,Electronics,2023-09-30,3456789012345,899.99,4.8,4K Ultra HD TV,XYZ Electronics
+10,Home & Garden,2023-09-30,6543210987654,199.99,3.9,Pressure Cooker,Home Essentials
+12,Books,2023-09-30,2345678901234,19.99,4.2,The Great Novel,Bookstore Inc.
+14,Electronics,2023-09-30,7890123456789,799.99,4.7,Smart Speaker,SoundTech
+16,Electronics,2023-09-30,5432109876543,349.99,4.0,Wireless Headphones,AudioTech
+17,Electronics,2023-09-30,6547657657657,499.99,3.5,Smartwatch,SmartWear
+21,Electronics,2023-09-30,3456345634563,599.99,4.2,Laptop XYZ,ABC Electronics
+22,Electronics,2023-09-30,9856345634567,299.99,3.7,Tablet ABC,ABC Electronics
+23,Books,2023-09-30,9856345634576,9.99,4.8,Sci-Fi Adventure,Bookstore Inc.
+25,Home & Garden,2023-09-30,6345671234123,79.99,4.6,Coffee Maker,Home Essentials
+33,Home & Garden,2023-09-30,2345623456219,149.99,4.3,Blender,Home Essentials
+36,Clothing,2023-09-30,7654323456789,49.99,3.8,Red T-Shirt,Fashion Co.
+37,Electronics,2023-09-30,9876345634563,199.99,4.5,Bluetooth Speaker,SoundTech
+39,Electronics,2023-09-30,2134513541354,249.99,3.6,Wireless Mouse,ABC Electronics
+40,Clothing,2023-09-30,9856345134532,39.99,4.0,Sneakers,Fashion Co.
+43,Books,2023-09-30,9656345634562,14.99,4.9,Mystery Novel,Bookstore Inc.
+44,Home & Garden,2023-09-30,2956345634563,69.99,4.4,Toaster,Home Essentials
+45,Electronics,2023-09-30,8956345634565,179.99,4.8,Smart Camera,SecurityTech
+46,Clothing,2023-09-30,7656345634567,49.99,3.5,Black Jacket,Fashion Co.
+47,Electronics,2023-09-30,9956345634563,149.99,4.1,Bluetooth Earbuds,AudioTech
+48,Electronics,2023-09-30,7656345634566,299.99,4.7,Smart Thermostat,HomeTech
+49,Books,2023-09-30,7656345634568,12.99,4.6,Self-Help Guide,Bookstore Inc.
+51,Electronics,2023-09-30,8956345634566,179.99,4.3,Wireless Keyboard,ABC Electronics
+55,Electronics,2023-09-30,7656345634569,249.99,4.8,HD Webcam,VideoTech
+56,Electronics,2023-09-30,3956345634563,69.99,3.9,Gaming Mouse,GameTech
+57,Electronics,2023-09-30,7656345634570,399.99,4.2,VR Headset,GameTech
+58,Electronics,2023-09-30,4956345634563,89.99,4.4,Portable Charger,PowerTech
+60,Home & Garden,2023-09-30,7656345634571,59.99,3.5,Pressure Washer,HomeTech
+61,Electronics,2023-09-30,7656345634572,129.99,4.9,Noise-Canceling Headphones,AudioTech
+63,Electronics,2023-09-30,7656345634573,299.99,4.3,4K Gaming Monitor,GameTech
+64,Electronics,2023-09-30,7656345634574,199.99,4.8,Smart Doorbell,SecurityTech
+65,Home & Garden,2023-09-30,7656345634575,89.99,4.1,Robot Vacuum Cleaner,HomeTech
+66,Books,2023-09-30,7656345634576,14.99,4.6,Science Fiction Novel,Bookstore Inc.
+67,Electronics,2023-09-30,7656345634577,99.99,3.5,Wireless Router,ABC Electronics
+68,Home & Garden,2023-09-30,7656345634578,59.99,4.0,Kitchen Blender,Home Essentials
+70,Electronics,2023-09-30,7656345634579,149.99,4.7,Smart Scale,HealthTech
+72,Electronics,2023-09-30,7656345634580,79.99,4.2,Wireless Earbuds,AudioTech
+74,Electronics,2023-09-30,7656345634581,199.99,3.7,Security Camera,SecurityTech
+75,Books,2023-09-30,7656345634582,9.99,4.5,Travel Guide,Bookstore Inc.
+76,Electronics,2023-09-30,7656345634583,49.99,4.0,Bluetooth Keyboard,ABC Electronics
+78,Electronics,2023-09-30,7656345634584,29.99,3.5,Wireless Speaker,SoundTech
+80,Clothing,2023-09-30,7656345634585,39.99,4.2,White T-Shirt,Fashion Co.
+82,Electronics,2023-09-30,7656345634586,199.99,4.7,Smart Refrigerator,HomeTech
+85,Home & Garden,2023-09-30,7656345634587,149.99,3.9,Coffee Grinder,Home Essentials
+87,Books,2023-09-30,7656345634588,12.99,4.8,Mystery Thriller,Bookstore Inc.
+88,Clothing,2023-09-30,7656345634589,59.99,4.4,Red Dress,Fashion Co.
+90,Electronics,2023-09-30,7656345634590,299.99,4.1,Smart TV,XYZ Electronics
+92,Electronics,2023-09-30,7656345634591,399.99,4.6,Smart Refrigerator,HomeTech
+94,Clothing,2023-09-30,7656345634592,49.99,4.3,Blue Shirt,Fashion Co.
+95,Electronics,2023-09-30,7656345634593,129.99,4.8,Wireless Mouse,ABC Electronics
+97,Electronics,2023-09-30,7656345634594,199.99,4.3,Smart Speaker,SoundTech
+98,Home & Garden,2023-09-30,7656345634595,89.99,4.0,Electric Kettle,Home Essentials
+109,Electronics,2023-09-30,7656345634596,399.99,4.9,Wireless Headphones,AudioTech
+112,Electronics,2023-09-30,7656345634597,299.99,4.3,Bluetooth Earbuds,AudioTech
+116,Books,2023-09-30,7656345634598,14.99,4.8,Fiction Novel,Bookstore Inc.
+128,Home & Garden,2023-09-30,7656345634599,79.99,4.6,Slow Cooker,Home Essentials
+132,Electronics,2023-09-30,7656345634600,199.99,4.4,Smartwatch,SmartWear
+136,Electronics,2023-09-30,7656345634601,299.99,3.8,Laptop XYZ,ABC Electronics
+139,Electronics,2023-09-30,7656345634602,399.99,4.1,Tablet ABC,ABC Electronics
+142,Clothing,2023-09-30,7656345634603,49.99,4.7,Black T-Shirt,Fashion Co.
+145,Electronics,2023-09-30,7656345634604,29.99,3.5,Bluetooth Speaker,SoundTech
+160,Electronics,2023-09-30,7656345634605,399.99,4.2,Wireless Keyboard,ABC Electronics
+172,Electronics,2023-09-30,7656345634606,299.99,4.8,Smart Camera,SecurityTech
+179,Books,2023-09-30,7656345634607,14.99,4.3,Mystery Novel,Bookstore Inc.
+191,Clothing,2023-09-30,7656345634608,69.99,4.9,Red Jacket,Fashion Co.
