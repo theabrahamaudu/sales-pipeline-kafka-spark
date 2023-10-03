@@ -5,3 +5,4 @@ pymysql
 ipykernel
 pyspark
 python-dotenv
+pyyaml

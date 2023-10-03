@@ -50,24 +50,23 @@ class streamHandler:
         self.cassandra_table = self.config['cassandra']['table']
 
         # Start Spark session
-        spark = SparkSession \
+        JARS_PATH = "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/jsr166e-1.1.0.jar,\
+                    file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-cassandra-connector-2.4.0-s_2.11.jar,\
+                    file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/mysql-connector-java-5.1.45.jar,\
+                    file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-sql-kafka-0-10_2.11-2.4.4.jar"
+        self.spark = SparkSession \
             .builder \
             .appName("Pyspark Structured Streaming w/ Kafka-Cassandra-MySQL") \
             .master("local[*]") \
-            .config("spark.jars", "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/jsr166e-1.1.0.jar,\
-                    file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-cassandra-connector-2.4.0-s_2.11.jar") \
-            .config("spark.executor.extraClassPath", "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/jsr166e-1.1.0.jar,\
-                    file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-cassandra-connector-2.4.0-s_2.11.jar") \
-            .config("spark.executor.extraLibrary", "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/jsr166e-1.1.0.jar,\
-                    file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-cassandra-connector-2.4.0-s_2.11.jar") \
-            .config("spark.driver.extraClassPath", "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/jsr166e-1.1.0.jar,\
-                    file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-cassandra-connector-2.4.0-s_2.11.jar") \
+            .config("spark.jars", JARS_PATH) \
+            .config("spark.executor.extraClassPath", JARS_PATH) \
+            .config("spark.executor.extraLibrary", JARS_PATH) \
+            .config("spark.driver.extraClassPath", JARS_PATH) \
             .config("spark.cassandra.connection.host", self.cassandra_host) \
             .config("spark.cassandra.connection.port", self.cassandra_port) \
             .getOrCreate()
         
-        spark.sparkContext.setLogLevel('ERROR')
-        self.spark = spark
+        self.spark.sparkContext.setLogLevel('ERROR')
 
         # Load customer data
         self.customer_data = self.spark.read.csv(customer_data_path,
@@ -142,8 +141,30 @@ class streamHandler:
 
 
     def saveToMySQL(self, current_df, epoch_id):
+        # initialize db credentials
+        db_credentials = {
+            "user": self.mysql_username,
+            "password": self.mysql_password,
+            "driver": self.mysql_driver
+        }
+
         # Print current epoch_id
         print(f"Current epoch_id:\n {epoch_id}")
+
+        # get current time
+        processed_at = time.strftime("%Y-%m-%d %H:%M:%S")
+
+        # Create final dataframe
+        current_df_final = current_df\
+            .withColumn("processed_at", lit(processed_at))\
+            .withColumn("batch_id", lit(epoch_id))
+        
+        # Write dataframe to mysql
+        current_df_final.write\
+            .jdbc(url=self.mysql_jdbc_url,
+                  table=self.mysql_table,
+                  mode="append",
+                  properties=db_credentials)
 
 
     def writeOrdersToCassandra(self, orders_df3):

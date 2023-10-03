@@ -1,6 +1,6 @@
 kafka:
   topic: orderstopicdemo
-  bootsrap_server: localhost:9092
+  bootstrap_server: localhost:9092
 
 mysql:
   host: localhost
