@@ -1,9 +1,11 @@
+# Local package
+-e .
+
+# External requirements
 kafka-python
 pandas
 cassandra-driver
 pymysql
 ipykernel
-# pyspark==2.3.0
-py4j==0.10.9.5
 python-dotenv
 pyyaml
