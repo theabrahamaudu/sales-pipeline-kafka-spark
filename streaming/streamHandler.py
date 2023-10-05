@@ -27,6 +27,7 @@ Example:
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
+from pyspark.sql.streaming import StreamingQuery
 import time
 import yaml
 import pandas as pd
@@ -69,7 +70,8 @@ class streamHandler:
     """
     def __init__(self, config_path: str, customer_data_path: str):
         """
-        Initializes the class with the given configuration and customer data paths.
+        Initializes the class with the given configuration on the code base 
+        and customer data path on HDFS.
         Initializes the Spark session.
         
         Parameters:
@@ -82,18 +84,6 @@ class streamHandler:
         with open(config_path+'/config.yaml', 'r') as f:
             config = yaml.safe_load(f.read())
         self.config = config
-
-        # Define schema for orders dataframe
-        self.orders_schema = StructType() \
-            .add("order_id", StringType()) \
-            .add("created_at", StringType()) \
-            .add("discount", StringType()) \
-            .add("product_id", StringType()) \
-            .add("quantity", StringType()) \
-            .add("subtotal", StringType()) \
-            .add("tax", StringType()) \
-            .add("total", StringType()) \
-            .add("customer_id", StringType())
 
         # Initialize kafka variables
         self.topic = self.config['kafka']['topic']
@@ -117,13 +107,14 @@ class streamHandler:
         self.cassandra_table = self.config['cassandra']['table']
 
         # Start Spark session
-        JARS_PATH = "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/jsr166e-1.1.0.jar," \
-            "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-cassandra-connector-assembly_2.12-3.3.0.jar," \
-            "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/mysql-connector-java-8.0.30.jar," \
-            "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-sql-kafka-0-10_2.12-3.3.0.jar," \
-            "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/kafka-clients-3.5.1.jar," \
-            "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-streaming-kafka-0-10-assembly_2.12-3.3.3.jar," \
-            "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/commons-pool2-2.11.1.jar" 
+        jars_dir = self.config['jars']['dir']
+        JARS_PATH = "file://"+jars_dir+"/jsr166e-1.1.0.jar," \
+            "file://"+jars_dir+"/spark-cassandra-connector-assembly_2.12-3.3.0.jar," \
+            "file://"+jars_dir+"/mysql-connector-java-8.0.30.jar," \
+            "file://"+jars_dir+"/spark-sql-kafka-0-10_2.12-3.3.0.jar," \
+            "file://"+jars_dir+"/kafka-clients-3.5.1.jar," \
+            "file://"+jars_dir+"/spark-streaming-kafka-0-10-assembly_2.12-3.3.3.jar," \
+            "file://"+jars_dir+"/commons-pool2-2.11.1.jar" 
 
         self.spark = SparkSession \
             .builder \
@@ -143,6 +134,18 @@ class streamHandler:
         self.customer_data = self.spark.read.csv(customer_data_path,
                                                  header=True,
                                                  inferSchema=True)
+        
+        # Define schema for orders dataframe
+        self.orders_schema = StructType() \
+            .add("order_id", StringType()) \
+            .add("created_at", StringType()) \
+            .add("discount", StringType()) \
+            .add("product_id", StringType()) \
+            .add("quantity", StringType()) \
+            .add("subtotal", StringType()) \
+            .add("tax", StringType()) \
+            .add("total", StringType()) \
+            .add("customer_id", StringType())
 
 
     def readFromKafka(self, offset_start='latest') -> DataFrame:

@@ -1,15 +1,29 @@
+"""
+This module defines a Kafka producer class for sending messages to a Kafka topic.
 
+The producer class includes methods for:
+1. Initializing the Kafka producer.
+2. Producing messages to the specified Kafka topic.
+
+Usage:
+    To use this module, create an instance of the producer class and call its `produce` method to start
+    sending messages to the Kafka topic.
+
+Example:
+    producer_obj = producer(
+        config_path='./config',
+        local_file_path="./data/orders.csv"
+    )
+    producer_obj.produce()
+"""
 
 from kafka import KafkaProducer
 from datetime import datetime
 import time
 from json import dumps
-import random
 import pandas as pd
+import yaml
 
-
-KAFKA_TOPIC_NAME_CONS = "orderstopicdemo"
-KAFKA_BOOTSTRAP_SERVERS_CONS = 'localhost:9092'
 
 class producer:
     """
@@ -24,7 +38,7 @@ class producer:
         __init__(self, topic: str, server: str, local_file_path: str): Initializes the Kafka producer.
         produce(self): Produces messages to the Kafka topic.
     """
-    def __init__(self, topic: str, server: str, local_file_path: str):
+    def __init__(self, config_path: str, local_file_path: str):
         """
         Initializes an instance of the class.
 
@@ -40,12 +54,17 @@ class producer:
         # Load local file to pandas dataframe
         self.orders_df = pd.read_csv(local_file_path)
 
-        # Set topic and server
-        self.topic = topic
-        self.server = server
+        # Load config
+        with open(config_path+'/config.yaml', 'r') as f:
+            config = yaml.safe_load(f.read())
+        self.config = config
+
+        # Initialize kafka variables
+        self.topic = self.config['kafka']['topic']
+        self.server = self.config['kafka']['bootstrap_server']
 
         # Set producer
-        self.producer = KafkaProducer(bootstrap_servers=server,
+        self.producer = KafkaProducer(bootstrap_servers=self.server,
                                       value_serializer=lambda x: dumps(x).encode('utf-8'))
         
     def produce(self):
@@ -75,7 +94,8 @@ class producer:
 
 if __name__ == '__main__':
     # Create producer object
-    producer_obj = producer(topic=KAFKA_TOPIC_NAME_CONS,
-                            server=KAFKA_BOOTSTRAP_SERVERS_CONS,
-                            local_file_path="./data/orders.csv")
+    producer_obj = producer(
+        config_path='./config',
+        local_file_path="./data/orders.csv"
+    )
     producer_obj.produce()
