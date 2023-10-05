@@ -1,3 +1,29 @@
+"""
+This module defines a streamHandler class for handling streaming operations in the sales pipeline.
+
+The streamHandler class includes methods for:
+1. Reading data from Kafka.
+2. Transforming the orders DataFrame to include a timestamp.
+3. Writing the transformed orders DataFrame to Cassandra.
+4. Aggregating data from the orders DataFrame.
+5. Writing the aggregated data to MySQL.
+
+Usage:
+    To use this module, create an instance of the streamHandler class and call its methods to execute the
+    different steps of the sales pipeline streaming process.
+
+Example:
+    stream = streamHandler(config_path='./config', customer_data_path='/user/sales_pipeline/customers.csv')
+    orders_df = stream.readFromKafka()
+    orders_df3 = stream.transformOrdersData(orders_df)
+    cassandra_query = stream.writeOrdersToCassandra(orders_df3)
+    orders_df5, console_output = stream.aggregateData(orders_df3)
+    mysql_query = stream.writeAggToMySQL(orders_df5)
+    cassandra_query.awaitTermination()
+    console_output.awaitTermination()
+    mysql_query.awaitTermination()
+"""
+
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
@@ -9,7 +35,48 @@ import os
 
 
 class streamHandler:
+    """
+    This class handles streaming operations for the sales pipeline.
+
+    Attributes:
+        config_path (str): The path to the configuration file.
+        customer_data_path (str): The path to the customer data file.
+
+    Methods:
+        __init__(self, config_path: str, customer_data_path: str):
+            Initializes the StreamHandler object.
+
+        readFromKafka(self):
+            Reads data from Kafka into a DataFrame.
+
+        transformOrdersData(self, orders_df):
+            Transforms the orders DataFrame to include a timestamp.
+
+        writeOrdersToCassandra(self, orders_df):
+            Writes the transformed orders DataFrame to Cassandra.
+
+        writeAggToMySQL(self, orders_df):
+            Writes the aggregated data from the orders DataFrame to MySQL.
+
+        saveToCassandra(self, current_df, epoch_id):
+            Helper method for `writeOrdersToCassandra` to save the given DataFrame to Cassandra.
+
+        saveToMySQL(self, current_df, epoch_id):
+            Helper method for `writeAggToMySQL` to save the given DataFrame to MySQL.
+
+        aggregateData(self, orders_df):
+            Aggregates data from the orders DataFrame.
+    """
     def __init__(self, config_path: str, customer_data_path: str):
+        """
+        Initializes the class with the given configuration and customer data paths.
+        Initializes the Spark session.
+        
+        Parameters:
+            config_path (str): The path to the configuration file.
+            customer_data_path (str): The path to the customer data file.
+        
+        """
 
         # Load config
         with open(config_path+'/config.yaml', 'r') as f:
@@ -78,7 +145,16 @@ class streamHandler:
                                                  inferSchema=True)
 
 
-    def readFromKafka(self, offset_start='latest'):
+    def readFromKafka(self, offset_start='latest') -> DataFrame:
+        """
+        Reads data from Kafka using the specified offset start.
+
+        Args:
+            offset_start (str, optional): The offset to start reading from. Defaults to 'latest'.
+
+        Returns:
+            DataFrame: The dataframe containing the read data from Kafka.
+        """
         # Read from kafka
         orders_df = self.spark.readStream\
             .format("kafka")\
@@ -94,7 +170,17 @@ class streamHandler:
         return orders_df
     
 
-    def transformOrdersData(self, orders_df):
+    def transformOrdersData(self, orders_df: DataFrame) -> DataFrame:
+        """
+        Transforms the orders DataFrame to include a timestamp.
+
+        Parameters:
+            orders_df (DataFrame): The input orders DataFrame.
+
+        Returns:
+            DataFrame: The transformed orders DataFrame with the timestamp included.
+        """
+
         # Transform orders dataframe to include timestamp
         orders_df1 = orders_df\
             .selectExpr("CAST(value AS STRING)", "timestamp")
@@ -112,7 +198,17 @@ class streamHandler:
         return orders_df3
     
 
-    def aggregateData(self, orders_df3):
+    def aggregateData(self, orders_df3: DataFrame) -> (DataFrame, StreamingQuery):
+        """
+        Aggregates data from the given orders DataFrame.
+
+        Parameters:
+            orders_df3 (DataFrame): The orders DataFrame to be aggregated.
+
+        Returns:
+            Tuple[DataFrame, StreamingQuery]: A tuple containing the aggregated DataFrame and the console output
+            of the aggregation process.
+        """
         # print schema of customer dataframe
         print("Customer dataframe schema: ")
         self.customer_data.printSchema()
@@ -140,7 +236,16 @@ class streamHandler:
         return orders_df5, console_output
     
 
-    def writeAggToMySQL(self, orders_df5):
+    def writeAggToMySQL(self, orders_df5: DataFrame) -> StreamingQuery:
+        """
+        Writes the aggregated data from the given DataFrame to MySQL.
+
+        Args:
+            orders_df5 (DataFrame): The DataFrame containing the aggregated data.
+
+        Returns:
+            StreamingQuery: The MySQL query used to write the data to the database.
+        """
         mysql_query = orders_df5.writeStream\
             .trigger(processingTime='15 seconds')\
             .outputMode("update")\
@@ -149,7 +254,18 @@ class streamHandler:
         return mysql_query
 
 
-    def saveToMySQL(self, current_df, epoch_id):
+    def saveToMySQL(self, current_df: DataFrame, epoch_id: int):
+        """
+        Helper method for `writeAggToMySQL` to save the given DataFrame to MySQL.
+        Includes new columns for `batch_id` and `processed_at` in the data to be saved.
+
+        Args:
+            current_df (DataFrame): The DataFrame to be saved.
+            epoch_id (int): The ID of the current epoch.
+
+        Returns:
+            None
+        """
         # initialize db credentials
         db_credentials = {
             "user": self.mysql_username,
@@ -163,7 +279,7 @@ class streamHandler:
         # get current time
         processed_at = time.strftime("%Y-%m-%d %H:%M:%S")
 
-        # Create final dataframe
+        # Create final dataframe including `processed_at` and `batch_id`
         current_df_final = current_df\
             .withColumn("processed_at", lit(processed_at))\
             .withColumn("batch_id", lit(epoch_id))
@@ -176,7 +292,16 @@ class streamHandler:
                   properties=db_credentials)
 
 
-    def writeOrdersToCassandra(self, orders_df3):
+    def writeOrdersToCassandra(self, orders_df3: DataFrame) -> StreamingQuery:
+        """
+        Writes the given DataFrame to Cassandra.
+
+        Parameters:
+            orders_df3 (DataFrame): The DataFrame to be written to Cassandra.
+
+        Returns:
+            StreamingQuery: The streaming query object representing the execution of the writeStream operation.
+        """
         # Write dataframe to cassandra
         cassandra_query = orders_df3.writeStream\
             .trigger(processingTime='15 seconds')\
@@ -186,7 +311,17 @@ class streamHandler:
         return cassandra_query
 
 
-    def saveToCassandra(self, current_df, epoch_id):
+    def saveToCassandra(self, current_df: DataFrame, epoch_id: int):
+        """
+        Helper method for `writeOrdersToCassandra` to save the current DataFrame to Cassandra.
+
+        Parameters:
+            current_df (DataFrame): The current DataFrame to be saved.
+            epoch_id (int): The current epoch ID.
+
+        Returns:
+            None
+        """
         # Print current epoch_id
         print(f"Cassandra Current epoch_id:\n {epoch_id}")
 
