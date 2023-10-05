@@ -3,6 +3,7 @@ pandas
 cassandra-driver
 pymysql
 ipykernel
-pyspark
+# pyspark==2.3.0
+py4j==0.10.9.5
 python-dotenv
 pyyaml

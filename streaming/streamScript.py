@@ -2,7 +2,7 @@ from streamHandler import streamHandler
 
 if __name__ == "__main__":
     # Initialize stream handler
-    stream = streamHandler(config_path='./config', customer_data_path='./data/customers.csv')
+    stream = streamHandler(config_path='./config', customer_data_path='/user/sales_pipeline/customers.csv')
 
     # Read from kafka
     orders_df = stream.readFromKafka()

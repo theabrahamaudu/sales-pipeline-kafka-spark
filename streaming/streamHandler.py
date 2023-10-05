@@ -50,10 +50,13 @@ class streamHandler:
         self.cassandra_table = self.config['cassandra']['table']
 
         # Start Spark session
-        JARS_PATH = "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/jsr166e-1.1.0.jar,\
-                    file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-cassandra-connector-2.4.0-s_2.11.jar,\
-                    file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/mysql-connector-java-5.1.45.jar,\
-                    file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-sql-kafka-0-10_2.11-2.4.4.jar"
+        JARS_PATH = "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/jsr166e-1.1.0.jar," \
+            "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-cassandra-connector-2.4.0-s_2.11.jar," \
+            "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/mysql-connector-java-8.0.30.jar," \
+            "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-sql-kafka-0-10_2.12-3.3.0.jar," \
+            "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/kafka-clients-3.5.1.jar," \
+            "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-streaming-kafka-0-10-assembly_2.12-3.3.3.jar" 
+
         self.spark = SparkSession \
             .builder \
             .appName("Pyspark Structured Streaming w/ Kafka-Cassandra-MySQL") \
@@ -111,7 +114,7 @@ class streamHandler:
 
         # Join customer dataframe to orders dataframe by customer_id
         orders_df4 = orders_df3\
-            .join(self.customer_data, orders_df3.customer_id == self.customer_data.customer_id, 'inner')
+            .join(self.customer_data, orders_df3.customer_id == self.customer_data.ID, 'inner')
         
         # find total_sum_amount by grouping source, state
         orders_df5 = orders_df4.groupBy("source", "state")\
@@ -122,7 +125,7 @@ class streamHandler:
         orders_df5.printSchema()
 
         # write data to console for debugging
-        orders_df5.writestream\
+        orders_df5.writeStream\
             .trigger(processingTime='15 seconds')\
             .outputMode("update")\
             .option("truncate", "false")\
