@@ -11,13 +11,17 @@ if __name__ == "__main__":
     orders_df3 = stream.transformOrdersData(orders_df)
 
     # Write transformed orders dataframe to cassandra
-    stream.writeOrdersToCassandra(orders_df3)
+    cassandra_query = stream.writeOrdersToCassandra(orders_df3)
 
     # Aggregate orders dataframe with customer dataframe
-    orders_df5 = stream.aggregateData(orders_df3)
+    orders_df5, console_output = stream.aggregateData(orders_df3)
 
     # Write aggregated orders dataframe to mysql
-    stream.writeAggToMySQL(orders_df5)
+    mysql_query = stream.writeAggToMySQL(orders_df5)
 
+    # Await terminations
+    cassandra_query.awaitTermination()
+    console_output.awaitTermination()
+    mysql_query.awaitTermination()
 
 

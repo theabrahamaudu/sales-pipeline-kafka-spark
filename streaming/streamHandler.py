@@ -51,11 +51,12 @@ class streamHandler:
 
         # Start Spark session
         JARS_PATH = "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/jsr166e-1.1.0.jar," \
-            "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-cassandra-connector-2.4.0-s_2.11.jar," \
+            "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-cassandra-connector-assembly_2.12-3.3.0.jar," \
             "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/mysql-connector-java-8.0.30.jar," \
             "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-sql-kafka-0-10_2.12-3.3.0.jar," \
             "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/kafka-clients-3.5.1.jar," \
-            "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-streaming-kafka-0-10-assembly_2.12-3.3.3.jar" 
+            "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/spark-streaming-kafka-0-10-assembly_2.12-3.3.3.jar," \
+            "file:///home/abraham-pc/Documents/personal_projects/pyspark/lib/commons-pool2-2.11.1.jar" 
 
         self.spark = SparkSession \
             .builder \
@@ -99,10 +100,14 @@ class streamHandler:
             .selectExpr("CAST(value AS STRING)", "timestamp")
         
         orders_df2 = orders_df1\
-            .select(from_json(col("value"), self.orders_schema).alias("orders"), "timestamp")\
+            .select(from_json(col("value"), self.orders_schema).alias("orders"), "timestamp")
         
         orders_df3 = orders_df2\
             .select("orders.*", "timestamp")
+        
+        # Print schema of dataframe
+        print("Transformed Orders dataframe schema: ")
+        orders_df3.printSchema()
         
         return orders_df3
     
@@ -114,7 +119,7 @@ class streamHandler:
 
         # Join customer dataframe to orders dataframe by customer_id
         orders_df4 = orders_df3\
-            .join(self.customer_data, orders_df3.customer_id == self.customer_data.ID, 'inner')
+            .join(self.customer_data, orders_df3.customer_id == self.customer_data.customer_id, 'inner')
         
         # find total_sum_amount by grouping source, state
         orders_df5 = orders_df4.groupBy("source", "state")\
@@ -125,22 +130,23 @@ class streamHandler:
         orders_df5.printSchema()
 
         # write data to console for debugging
-        orders_df5.writeStream\
+        console_output = orders_df5.writeStream\
             .trigger(processingTime='15 seconds')\
             .outputMode("update")\
             .option("truncate", "false")\
             .format("console")\
             .start()
-
-        return orders_df5
+        
+        return orders_df5, console_output
     
 
     def writeAggToMySQL(self, orders_df5):
-        orders_df5.writeStream\
+        mysql_query = orders_df5.writeStream\
             .trigger(processingTime='15 seconds')\
             .outputMode("update")\
             .foreachBatch(self.saveToMySQL)\
             .start()
+        return mysql_query
 
 
     def saveToMySQL(self, current_df, epoch_id):
@@ -152,7 +158,7 @@ class streamHandler:
         }
 
         # Print current epoch_id
-        print(f"Current epoch_id:\n {epoch_id}")
+        print(f"MySQL Current epoch_id:\n {epoch_id}")
 
         # get current time
         processed_at = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -172,16 +178,17 @@ class streamHandler:
 
     def writeOrdersToCassandra(self, orders_df3):
         # Write dataframe to cassandra
-        orders_df3.writeStream\
+        cassandra_query = orders_df3.writeStream\
             .trigger(processingTime='15 seconds')\
             .outputMode("update")\
             .foreachBatch(self.saveToCassandra)\
             .start()
+        return cassandra_query
 
 
     def saveToCassandra(self, current_df, epoch_id):
         # Print current epoch_id
-        print(f"Current epoch_id:\n {epoch_id}")
+        print(f"Cassandra Current epoch_id:\n {epoch_id}")
 
         # Save current dataframe to cassandra
         current_df.write\

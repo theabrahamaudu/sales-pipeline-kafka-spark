@@ -1,4 +1,4 @@
-ID,Name,Address,Birth Date,City,Created At,Email,Latitude,Longitude,Password,Source,State,Zip
+customer_id,name,address,birth_date,city,created_at,email,latitude,longitude,password,source,state,zip
 1,Hudson Borer,9611-9809 West Rosedale Road,1986-12-12,Wood River,2017-10-07T01:34:35.462+05:30,borer-hudson@yahoo.com,40.71314890000001,-98.5259864,ccca881f-3e4b-4e5c-8336-354103604af6,Twitter,NE,68883
 2,Domenica Williamson,101 4th Street,1967-06-10,Searsboro,2018-04-09T12:10:05.167+05:30,williamson-domenica@yahoo.com,41.5813224,-92.6991321,eafc45bf-cf8e-4c96-ab35-ce44d0021597,Affiliate,IA,50242
 3,Lina Heaney,29494 Anderson Drive,1961-12-18,Sandstone,2017-06-27T06:06:20.625+05:30,lina.heaney@yahoo.com,46.11973039999999,-92.8416108,36f67891-34e5-4439-a8a4-2d9246775ff8,Facebook,MN,55072
