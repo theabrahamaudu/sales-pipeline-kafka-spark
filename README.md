@@ -9,151 +9,192 @@ Project Organization
     ├── LICENSE
     ├── README.md          <- The top-level README for developers using this project.
     │
-    ├── data
+    ├── config             <- Configuration and environment variable files
     │
-    ├── docs               <- A default Sphinx project; see sphinx-doc.org for details
+    ├── data               <- Raw data to be streamed
     │
-    ├── models             <- Trained and serialized models and model summaries
+    ├── databases          <- Scripts for connecting and setting up databases and tables
     │
-    ├── notebooks          <- Jupyter notebooks and experimental .py scripts. 
+    ├── docs               <- Documentation files
     │
-    ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
+    ├── producer           <- Kafka producer scripts
     │
-    ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-    │   └── figures        <- Generated graphics and figures to be used in reporting
+    ├── streaming          <- Spark streaming scripts
     │
     ├── requirements.txt   <- The requirements file for reproducing the environment
-    │
-    ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
-    ├── src                <- Source code for use in this project.
-    │   ├── __init__.py    <- Makes src a Python module
-    │   │
-    │   ├── data           <- Scripts to generate data
-    │   │   └── data_filters.py
-    │   │   └── load_n_filter.py
-    │   │   └── packet_streamer.py
-    │   │   └── pcap_to_csv.py
-    │   │
-    │   ├── features       <- Scripts to turn raw data into features for modeling
-    │   │   └── build_features.py
-    │   │
-    │   ├── models         <- Scripts to train models and then use trained models to make
-    │   │   │                 predictions
-    │   │   └── train_model.py
-    │   │
-    │   ├── utils         <- Utility scripts used across the project
-    │   │   └── backend_log_config.py
-    │   │   └── frontend_log_config.py
-    │   │   └── pipeline_log_config.py
-    │   │
-    │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │       └── visualize.py
-    │
-    └── tox.ini            <- tox file with settings for running tox; see tox.readthedocs.io
-
+    └── setup.py           <- makes project pip installable (pip install -e .) so local modules can be imported
 
 --------
-This repository contains an AI-powered cloud-based intrusion detection system (IDS) designed specifically for IoT networks. The system leverages an XGB (Extreme Gradient Boosting) model to detect and classify various types of attacks, ensuring the security and integrity of IoT environments.
+This repository provides scripts for simulating a real-time stream from a local CSV file using a Kafka producer. The stream is subscribed and processed using Spark structured streaming. The raw stream data is stored in a Cassandra table, undergoes transformation, and is saved in a MySQL table. This transformed data can be accessed and visualized in real-time on a Superset Dashboard.
 
 ## Dataset Overview
-The dataset used in this system consists of several types of attacks commonly encountered in IoT networks:
-
-- MITM-ARPSpoofing-n(1~6)-dec.pcap: This dataset includes traffic with both benign and Man-in-the-Middle (ARP spoofing) attacks.
-- DoS-SYNFlooding-n(1~6)-dec.pcap: Contains traffic with both benign and Denial of Service (SYN flooding) attacks.
-- Scan-HostPort-n(1~6)-dec.pcap: Includes traffic with both benign and scan (host and port scan) attacks.
-- Scan-PortOS-n(1~6)-dec.pcap: Contains traffic with both benign and scan (port and OS scan) attacks.
-- Mirai-UDPFlooding-n(1~4)-dec.pcap, Mirai-ACKFlooding-n(1~4)-dec.pcap, Mirai-HTTPFlooding-n(1~4)-dec.pcap: These datasets include traffic with both benign and three typical attacks (UDP/ACK/HTTP Flooding) executed by zombie PCs compromised by the Mirai malware.
-- Mirai-HostBruteforce-n(1~5)-dec.pcap: Contains traffic with both benign and the initial phase of the Mirai malware, including host discovery and Telnet brute-force attacks.
+The dataset used in this system consists of three CSV files, of which two of these are actively used:
+- `orders.csv`: 
+    - This is iterated over and fed to the topic of the Kafka producer
+- `customers.csv`:
+    - This is loaded to the Hadoop DFS where it can be accessed by Spark
 
 ## System Architecture
 The system is designed to streamline the training and inference pipelines, ensuring code reusability and consistency in outcomes. Here is an overview of the system architecture:
 
-![image](https://github.com/theabrahamaudu/ids_project/assets/82980669/1f247c2b-2bdc-4fa3-8a79-bdca7f427e40)
+[Insert architecture image]
 
-### Training Pipeline
-The packet data is first ingested by the ingestion module, which reads the packets into dataframes for further processing. The preprocessing module performs necessary transformations to prepare the data for model training and validation. During the model training phase, a decision is made whether to save the trained model or retrain it based on human judgment of its performance.
+### Kafka Producer
+The `orders.csv` file from local storage is used to simulate a continuous stream of data representing orders from the retail store's online platform. In a real-world scenario, this data would typically be generated by a webhook triggered when a customer places an order on the store's website. This setup allows for testing and development of stream processing pipelines in a controlled environment before deploying them to handle live data streams.
 
-### Inference Pipeline
-The API module loads the saved model and provides endpoints for user interaction. Users can upload raw data, which is then processed and made available for retrieval. Requests can be made to analyze and classify the processed data points based on the recognized attack classes in the model. The user interface facilitates interactive communication with the API, enabling packet analysis and the option to download analysis reports for future reference by network security personnel.
+### Spark Structured Streaming
+Spark Streaming is used to consume data from the Kafka topic and execute transformation and write operations to both a Cassandra and MySQL database. Initially, the raw stream is stored in a Cassandra database for archival purposes. Subsequently, the order data is enriched by aggregating it with customer data retrieved from HDFS. This aggregation process creates a new data structure that facilitates visualization and tracking of key performance indicators (KPIs). In a production environment, the customer data would typically be transformed into a DataFrame from a database using the appropriate connector.
 
-### Real-time Monitoring
-The system architecture includes the capability to establish remote connections to networks and stream packets in real-time to the IDS. This enables active monitoring of network packets and immediate detection of intrusions as they occur.
+### Real-time Dashboard
+Superset is employed for visualizing the aggregated data, allowing users to monitor and track desired metrics and key performance indicators (KPIs). This is accomplished by establishing a connection to the MySQL database and fetching data from the dedicated table where it is stored. To maintain real-time data updates, the data state is periodically refreshed, ensuring that the dashboard reflects the most current information.
 
-### Simulation of Real-time Data
-During the development phase, due to limitations in accessing a real-time IoT system, the data ingestion module was configured to handle bulk data instead. To simulate the streaming process to the prediction endpoint, the module mimicked the behavior of receiving data as if it were being streamed live from a remote location. This approach ensured that the system could be tested and evaluated even without real-time data availability.
+## Deployment
+This project has been developed and successfully deployed on a local Ubuntu 22.04 environment. It can be seamlessly deployed to a cloud platform by setting up the necessary dependencies and replicating the codebase, configured in accordance with your cloud setup, to a cloud-hosted Ubuntu virtual machine (VM).
 
-### Deployment and User Interface
-To ensure component separation, the user interface and API modules are deployed on different servers. The API engine is deployed on an Amazon Web Services (AWS) Elastic Compute Cluster (EC2) instance, while the user interface communicates with the API through a secure HTTPS connection. The user interface provides real-time updates to the user by displaying newly discovered attack packets in a dynamic window. These attack packets are presented in a human-readable format, along with their corresponding packet parameters.
-
-After the analysis process is completed, the generated data is made available for download in CSV format. This enables network security personnel to perform in-depth analysis and make informed decisions regarding network security based on the specific details of the flagged packets.
-
-### Performance Metrics
-The final XGB (Extreme Gradient Boosting) model achieved impressive performance metrics:
-
-- F1 macro avg: 0.997
-- F1 weighted avg: 1.0
-- Class 0.0: 1.0
-- Class 1.0: 1.0
-- Class 10.0: 0.973
-- Class 2.0: 1.0
-- Class 3.0: 0.995
-- Class 4.0: 1.0
-- Class 5.0: 1.0
-- Class 6.0: 1.0
-- Class 7.0: 1.0
-- Class 8.0: 1.0
-- Class 9.0: 0.999
-- Inference Time per Data Point: 1.0665294169455698e-05s
-- Training Time: 151.546875s
 
 --------
 
 ## Getting Started
-To use the IoT IDS App, visit <a href="https://iotids.streamlit.app/">IOT IDS App</a>.
-###### P.S: Server is not always up as the app is in beta 
+To watch the codebase walkthrough and demo session for the entire project, check out the YouTube video for this project <a href="https://www.youtube.com/@DataCodePy">here</a> [coming soon].
 
-Steps:
-- Select and upload a PCAP or PCAPNG file containing network packet data for an IoT network
-- Click the `Process` button to toggle file processing
-- Click `Activate IDS` to initialize packet analysis
-- Click `Download Analysis File` to download human readable CSV of flagged packets for further analysis
 --------
 ## Experimenting 
 ### Requirements
-- Windows 10, Ubuntu or any other suitable OS
-- Python >=3.10
-- Wireshark/tshark
+- Ubuntu [Tested on Ubuntu 22.04]
+- Python 3.7
+- Java 8 [Open JDK 1.8]
+- Hadoop 3.3.6
+- Spark 3.3.3
+- Kafka 3.5.1
+- Cassandra 4.1.3
+- MySQL 8.0.34
+- Superset
 
-### Reproduce Experiment
-- Create a new virtual environment
-- run:  ```git clone https://github.com/theabrahamaudu/ids_project.git```  
-- install requirements:  ```pip install -r requirements.txt```
-- Download the training dataset <a href="https://ieee-dataport.org/open-access/iot-network-intrusion-dataset">here</a>.
-- On your OS file explorer, move the dataset zip file to `path/to/.../ids_project/data/external/` and unzip the file in the directory
-- Run the preprocessing and model training pipeline:  ```python main.py``` <a small style="color:yellow"> N.B: This step could take a while (a.k.a hours)</a>.
-- Start the API Service: ```python app.py```
-- Open the `streamlit_app.py` module and swap the commenting between local and deployment `server` variable [ln 37,38], then open another terminal and run: ```streamlit run streamlit_app.py```
+#### Spark Dependencies [jars]:  
+Used in `streamHandler.py` module
+```
+jsr166e-1.1.0.jar
+spark-cassandra-connector-assembly_2.12-3.3.0.jar
+mysql-connector-java-8.0.30.jar
+spark-sql-kafka-0-10_2.12-3.3.0.jar
+kafka-clients-3.5.1.jar
+spark-streaming-kafka-0-10-assembly_2.12-3.3.3.jar
+commons-pool2-2.11.1.jar
+```
 
-### Reproduce Deployment
-#### API Server Side
-- Create AWS EC2 instance (Ubuntu)
-- Open the `streamlit_app.py` module and swap the commenting between local and deployment `server` variable [ln 37,38] back to the server mode and replace the `server` IP with the `Public IP` of your new EC2 instance
-- Create a new public GitHub repository
-- Push the code to the new repository
-- Clone the new repository on the EC2 instance
-- Setup app:
-    - Navigate to the app directory: ```cd [name_of_project_repo]```
-    - Update the EC2 instance: ```sudo apt-get update```
-    - Install python ```sudo apt install python3-pip```
-    - Install requirements ```pip3 install -r requirements.txt --no-cache-dir```
-    - run the app to be sure all is good: ```python3 app.py```
-- Configure NGINX for the app as described <a href="https://lcalcagni.medium.com/deploy-your-fastapi-to-aws-ec2-using-nginx-aa8aa0d85ec7">here</a> [Skip to **Nginx configuration** section].
-- Install tshark: ```sudo apt install tshark```
+### Reproduce Environment
+- Install and configure required software as defined in `Requirements` above
 
-#### Streamlit App
-- Create a <a href="streamlit.io">streamlit.io</a> account using your github account.
-- Create a streamlit app using the new repo you created for this app.
-- Use `streamlit_app.py` as the main app.
-- Click `Advanced...` and set python version to `Python 3.10` before firing it up.
+- Download Spark dependencies as defined above
 
-*Congratulations! 🎈* You have now successfully recreated the IoT IDS App.
+- Clone repository:  
+    ```
+    git clone https://github.com/theabrahamaudu/sales-pipeline-kafka-spark.git
+    ```  
+
+- Create Python virtual environment
+    ```
+    python3 -m venv .venv
+    ```
+
+- Install requirements:  
+    ```
+    pip install -r requirements.txt
+    ```
+- Edit jars dir in `config.yaml` in the config directory to where you have stored the jar dependencies:
+    ```
+    jars:
+      dir: /path/to/your/jars/lib
+    ```
+
+- Create `.env` file in the config directory and add your database login details:
+    ```
+    MYSQL_USERNAME = 'username'
+    MYSQL_PASSWORD = 'password'
+    ```
+
+### Reproduce Demo
+#### Start Services
+- Start Hadoop cluster
+- Start Spark cluster
+
+#### Setup Databases and Tables
+- Navigate to the databases directory
+- Run all cells in `cassandra_script.ipynb`
+- Run all cells in `mysql_script.ipynb`
+
+    ###### P.S: These scripts are just to make the steps easier. You can manually follow the steps in the scripts if running on cloud VM makes it tricky to run Jupyter Notebooks.
+
+
+#### Start Kafka Producer
+- Make topic creation bash script `create-topic.sh` executable:
+    ```
+    chmod +x ./producer/create-topic.sh
+    ```
+- Create topic:
+    ```
+    ./producer/create-topic.sh
+    ```
+- Start producer:
+    ```
+    python3 ./producer/kafkaProducer.py
+    ```
+
+#### Start Spark Streaming
+- Copy `customers.csv` from local file system to HDFS:
+    ```
+    hdfs dfs -put ./data/customers.csv /your/hdfs/directory/customers.csv
+    ```
+
+- Set the `customer_data_path` in the object instantiation of the `streamHandler` in `streamScript.py` to "`/your/hdfs/directory/customers.csv`"
+    ```
+    # Initialize stream handler
+    stream = streamHandler(config_path='./config', customer_data_path='/your/hdfs/directory/customers.csv')
+    ```
+
+- Run `streamScript.py`
+    ```
+    python3 ./streaming/streamScript
+    ```
+
+#### Setup Superset Dashboard
+- Start Superset
+- Connect to MySQL database
+- Create chart using `total_sales_by_source_state` table
+- Add the chart to a Dashboard
+- Set the refresh interval as desired
+
+*Congratulations! 🎈* You have now successfully recreated the Real-Time Retail Store Sales Pipeline with live visualization Dashboard.
+
+## Help
+
+Feel free to reach out to me on any of my socials below if you have any issues experimenting with the project.
+
+## Possible Improvements/Ideas
+
+- [ ] Deployment to cloud
+- [ ] Use secondary databases instead of csv files
+- [ ] Mock webhook/API architecture for Kafka producer
+
+## Authors
+
+Contributors names and contact info
+
+*Abraham Audu*
+
+* GitHub - [@the_abrahamaudu](https://github.com/theabrahamaudu)
+* X (formerly Twitter) - [@the_abrahamaudu](https://x.com/the_abrahamaudu)
+* LinkedIn - [@theabrahamaudu](https://www.linkedin.com/in/theabrahamaudu/)
+* Instagram - [@the_abrahamaudu](https://www.instagram.com/the_abrahamaudu/)
+* YouTube - [@DataCodePy](https://www.youtube.com/@DataCodePy)
+
+## Version History
+
+* See [commit change](https://github.com/theabrahamaudu/sales-pipeline-kafka-spark/commits/main)
+* See [release history](https://github.com/theabrahamaudu/sales-pipeline-kafka-spark/releases)
+
+## Acknowledgments
+
+* This project was inspired by DataMaking channel on YouTube
+* This [playlist](https://www.youtube.com/playlist?list=PLe1T0uBrDrfOYE8OwQvooPjmnP1zY3wFe) gave me a lot of guidance in building the pipeline
+* I got a lot of help from different websites in debugging at different stages (StackOverflow, etc)
