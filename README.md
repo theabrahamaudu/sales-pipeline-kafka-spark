@@ -35,7 +35,9 @@ The dataset used in this system consists of three CSV files, of which two of the
     - This is loaded to the Hadoop DFS where it can be accessed by Spark
 
 ## System Architecture
-The system is designed to streamline the training and inference pipelines, ensuring code reusability and consistency in outcomes. Here is an overview of the system architecture:
+This system seamlessly streams sales orders from a local file to a Kafka topic. Spark Streaming ingests the stream and takes charge of processing this data, initially storing the raw stream in a Cassandra database. It further enhances the data by combining order and customer information to create a structured dataset, which is subsequently saved in a MySQL table. The MySQL database powers the creation of a live dashboard on Superset, offering real-time insights. 
+
+Here's an overview of the system's architecture:
 
 ![Architecture Diagram](https://github.com/theabrahamaudu/sales-pipeline-kafka-spark/raw/main/docs/Sales%20Pipeline.png)
 
