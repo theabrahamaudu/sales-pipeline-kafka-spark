@@ -154,7 +154,7 @@ commons-pool2-2.11.1.jar
 
 - Run `streamScript.py`
     ```
-    python3 ./streaming/streamScript
+    python3 ./streaming/streamScript.py
     ```
 
 #### Setup Superset Dashboard
